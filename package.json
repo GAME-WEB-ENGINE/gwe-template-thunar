@@ -13,6 +13,6 @@
     "electron": "^13.1.2"
   },
   "dependencies": {
-    "gwe": "^1.0.1"
+    "gwe": "^1.0.2"
   }
 }
