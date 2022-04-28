@@ -1,5 +1,5 @@
 {
-  "name": "gwe-boilerplate",
+  "name": "game-rpg-scene",
   "version": "1.0.0",
   "description": "Electron video game",
   "main": "main.js",
@@ -13,6 +13,6 @@
     "electron": "^13.1.2"
   },
   "dependencies": {
-    "gwe": "^1.0.2"
+    "gwe": "^1.0.17"
   }
 }

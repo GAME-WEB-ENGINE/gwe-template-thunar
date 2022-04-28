@@ -11,8 +11,9 @@ let WORLD_DIRECTION_RIGHT = [1, 0];
 let WORLD_DIRECTION_FORWARD = [0, -1];
 let WORLD_DIRECTION_BACKWARD = [0, 1];
 
-class Room {
+class Room extends GWE.GfxDrawable {
   constructor() {
+    super();
     this.name = '';
     this.description = '';
     this.musicFile = '';
@@ -249,11 +250,11 @@ class Room {
     this.scriptMachine.loadFromFile(json['ScriptFile']);
     this.musicFile = json['MusicFile'];
 
-    this.map = new GWE.GfxJSMDrawable();
+    this.map = new GWE.GfxJSM();
     this.map.loadFromFile(json['MapFile']);
     this.map.setTexture(await GWE.textureManager.loadTexture(json['MapTextureFile']));
 
-    this.walkmesh = new GWE.GfxJWMDrawable();
+    this.walkmesh = new GWE.GfxJWM();
     this.walkmesh.loadFromFile(json['WalkmeshFile']);
 
     for (let obj of json['Spawns']) {
@@ -340,34 +341,34 @@ class Room {
 
   async $uiCreateDialog(author, text) {
     this.scriptMachine.setEnabled(false);
-    let dialogWidget = new GWE.UIDialogWidget();
-    dialogWidget.setAuthor(author);
-    dialogWidget.setText(text);
-    GWE.uiManager.addWidget(dialogWidget);
-    GWE.uiManager.focus(dialogWidget);
-    await GWE.eventManager.wait(dialogWidget, 'E_CLOSE');
-    GWE.uiManager.removeWidgetIf(w => w instanceof GWE.UIDialogWidget);
+    let uiDialog = new GWE.UIDialog();
+    uiDialog.setAuthor(author);
+    uiDialog.setText(text);
+    GWE.uiManager.addWidget(uiDialog);
+    GWE.uiManager.focus(uiDialog);
+    await GWE.eventManager.wait(uiDialog, 'E_CLOSE');
+    GWE.uiManager.removeWidget(uiDialog);
     this.scriptMachine.setEnabled(true);
   }
 
   async $uiCreateChoices(author, text, choices = []) {
     this.scriptMachine.setEnabled(false);
-    let dialogWidget = new GWE.UIDialogWidget();
-    dialogWidget.setAuthor(author);
-    dialogWidget.setText(text);
-    GWE.uiManager.addWidget(dialogWidget);
-    await GWE.eventManager.wait(dialogWidget, 'E_PRINT_FINISHED');
-    let menuWidget = new GWE.UIMenuWidget();
-    GWE.uiManager.addWidget(menuWidget, 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)');
+    let uiDialog = new GWE.UIDialog();
+    uiDialog.setAuthor(author);
+    uiDialog.setText(text);
+    GWE.uiManager.addWidget(uiDialog);
+    await GWE.eventManager.wait(uiDialog, 'E_PRINT_FINISHED');
 
+    let uiMenu = new GWE.UIMenu();
+    GWE.uiManager.addWidget(uiMenu, 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)');
     for (let choice of choices) {
-      menuWidget.addItemWidget(new GWE.UIMenuTextWidget({ text: choice['Text'] }));
+      uiMenu.addWidget(new GWE.UIMenuText({ text: choice['Text'] }));
     }
 
-    GWE.uiManager.focus(menuWidget);
-    let data = await GWE.eventManager.wait(menuWidget, 'E_MENU_ITEM_SELECTED');
-    GWE.uiManager.removeWidgetIf(w => w instanceof GWE.UIDialogWidget);
-    GWE.uiManager.removeWidgetIf(w => w instanceof GWE.UIMenuWidget);
+    GWE.uiManager.focus(uiMenu);
+    let data = await GWE.eventManager.wait(uiMenu, 'E_MENU_ITEM_SELECTED');
+    GWE.uiManager.removeWidget(uiDialog);
+    GWE.uiManager.removeWidget(uiMenu);
     this.scriptMachine.jump(choices[data.index]['Jumpto']);
     this.scriptMachine.setEnabled(true);
   }

@@ -1,6 +1,6 @@
 let { GWE } = require('gwe');
 
-class Model extends GWE.GfxJAMDrawable {
+class Model extends GWE.GfxJAM {
   constructor() {
     super();
     this.radius = 0;

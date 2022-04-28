@@ -1,5 +1,5 @@
 let { GWE } = require('gwe');
-let { Room } = require('./room');
+let { Room } = require('../entities/room');
 
 class GameScreen extends GWE.Screen {
   constructor(app) {
@@ -27,7 +27,7 @@ class GameScreen extends GWE.Screen {
 
   onEnter() {
     GWE.gfxManager.setShowDebug(true);
-    this.loadRoom('./assets/rooms/sample00/data.room', 'Spawn0000');
+    this.loadRoom('./assets/rooms/sample00/data.room', 'Spawn0000'); // problème, la logique de script doit avoir accès au chargement d'une nouvelle scene.
   }
 
   async loadRoom(path, spawnName) {
