@@ -39,6 +39,9 @@ class GameScreen extends GWE.Screen {
     this.scriptMachine.registerCommand('GOTO', GWE.Utils.BIND(this.$goto, this));
     this.scriptMachine.registerCommand('GOTO_IF', GWE.Utils.BIND(this.$gotoIf, this));
     this.scriptMachine.registerCommand('EXEC_IF', GWE.Utils.BIND(this.$execIf, this));
+    this.scriptMachine.registerCommand('VAR_SET', GWE.Utils.BIND(this.$varSet, this));
+    this.scriptMachine.registerCommand('VAR_ADD', GWE.Utils.BIND(this.$varAdd, this));
+    this.scriptMachine.registerCommand('VAR_SUB', GWE.Utils.BIND(this.$varSub, this));
     this.scriptMachine.registerCommand('DELAY', GWE.Utils.BIND(this.$delay, this));
     this.scriptMachine.registerCommand('UI_CREATE_DIALOG', GWE.Utils.BIND(this.$uiCreateDialog, this));
     this.scriptMachine.registerCommand('UI_CREATE_CHOICES', GWE.Utils.BIND(this.$uiCreateChoices, this));
@@ -384,6 +387,20 @@ class GameScreen extends GWE.Screen {
     if (CHECK_CONDITION(this.player.getVariant(varloc), cond, value)) {
       this.scriptMachine.runCommand(cmd['CommandName'], cmd['CommandArgs']);
     }
+  }
+
+  $varSet(varloc, value) {
+    this.player.setVariant(varloc, value);
+  }
+
+  $varAdd(varloc, value) {
+    let variant = this.player.getVariant(varloc);
+    this.player.setVariant(varloc, variant + value);
+  }
+
+  $varSub(varloc, value) {
+    let variant = this.player.getVariant(varloc);
+    this.player.setVariant(varloc, variant - value);
   }
 
   $delay(ms) {
