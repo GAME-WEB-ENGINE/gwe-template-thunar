@@ -1,8 +1,20 @@
 window.addEventListener('load', async () => {
   let { GWE } = require('gwe');
-  let { MainScreen } = require('./src/screens/main_screen');
+  let { Player } = require('./src/core/player');
+  let { BootScreen } = require('./src/screens/boot_screen');
+  
+  class Game extends GWE.Application {
+    constructor(resolutionWidth, resolutionHeight, sizeMode) {
+      super(resolutionWidth, resolutionHeight, sizeMode);
+      this.player = Player.createFromFile('./assets/player.json');
+    }
+  
+    getPlayer() {
+      return this.player;
+    }
+  }
 
-  let app = new GWE.Application(800, 800, GWE.SizeModeEnum.FIXED);
-  GWE.screenManager.requestSetScreen(new MainScreen(app));
-  requestAnimationFrame(ts => app.run(ts));
+  let game = new Game(800, 800, GWE.SizeModeEnum.FIXED);
+  GWE.screenManager.requestSetScreen(new BootScreen(game));
+  requestAnimationFrame(ts => game.run(ts));
 });

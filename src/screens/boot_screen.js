@@ -1,7 +1,7 @@
 let { GWE } = require('gwe');
 let { GameScreen } = require('./game_screen');
 
-class MainScreen extends GWE.Screen {
+class BootScreen extends GWE.Screen {
   constructor(app) {
     super(app);
   }
@@ -26,4 +26,4 @@ class MainScreen extends GWE.Screen {
   }
 }
 
-module.exports.MainScreen = MainScreen;
+module.exports.BootScreen = BootScreen;
