@@ -135,28 +135,7 @@ class Room {
 
   update(ts) {
     this.updateControllerInput(ts);
-
-    this.map.update(ts);
-    this.walkmesh.update(ts);
-    this.controller.update(ts);
-    this.camera.update(ts);
-    this.scriptMachine.update(ts);
-
-    for (let spawn of this.spawns) {
-      spawn.update(ts);
-    }
-
-    for (let model of this.models) {
-      model.update(ts);
-    }
-
-    for (let mover of this.movers) {
-      mover.update(ts);
-    }
-
-    for (let trigger of this.triggers) {
-      trigger.update(ts);
-    }
+    this.updateEntities(ts);
   }
 
   updateControllerInput(ts) {
@@ -185,6 +164,30 @@ class Room {
     }
     else {
       this.controller.play('IDLE', true);
+    }
+  }
+
+  updateEntities(ts) {
+    this.map.update(ts);
+    this.walkmesh.update(ts);
+    this.controller.update(ts);
+    this.camera.update(ts);
+    this.scriptMachine.update(ts);
+
+    for (let spawn of this.spawns) {
+      spawn.update(ts);
+    }
+
+    for (let model of this.models) {
+      model.update(ts);
+    }
+
+    for (let mover of this.movers) {
+      mover.update(ts);
+    }
+
+    for (let trigger of this.triggers) {
+      trigger.update(ts);
     }
   }
 
@@ -285,7 +288,7 @@ class Room {
       if (data.key == GWE.InputKeyEnum.ENTER) {
         GWE.eventManager.unsubscribe(GWE.inputManager, 'E_KEYDOWN_ONCE', this);
         this.scriptMachine.setEnabled(true);
-      } 
+      }
     });
   }
 
