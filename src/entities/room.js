@@ -143,23 +143,23 @@ class Room {
       return;
     }
 
-    let direction = GWE.Utils.VEC3_ZERO;
+    let moveDir = GWE.Utils.VEC3_ZERO;
     if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.LEFT)) {
-      direction = GWE.Utils.VEC3_LEFT;
+      moveDir = GWE.Utils.VEC3_LEFT;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.RIGHT)) {
-      direction = GWE.Utils.VEC3_RIGHT;
+      moveDir = GWE.Utils.VEC3_RIGHT;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.UP)) {
-      direction = GWE.Utils.VEC3_FORWARD;
+      moveDir = GWE.Utils.VEC3_FORWARD;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.DOWN)) {
-      direction = GWE.Utils.VEC3_BACKWARD;
+      moveDir = GWE.Utils.VEC3_BACKWARD;
     }
 
-    if (direction != GWE.Utils.VEC3_ZERO) {
-      this.utilsControllerMove(GWE.Utils.VEC3_SCALE(direction, this.controller.getSpeed() * (ts / 1000)));
-      this.controller.setRotation([0, GWE.Utils.VEC2_ANGLE([direction[0], direction[2]]), 0]);
+    if (moveDir != GWE.Utils.VEC3_ZERO) {
+      this.utilsControllerMove(GWE.Utils.VEC3_SCALE(moveDir, this.controller.getSpeed() * (ts / 1000)));
+      this.controller.setRotation([0, GWE.Utils.VEC2_ANGLE([moveDir[0], moveDir[2]]), 0]);
       this.controller.play('RUN', true);
     }
     else {
