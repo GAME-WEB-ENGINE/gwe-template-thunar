@@ -64,7 +64,6 @@ class Room {
     room.controller.loadFromFile(json['Controller']['JAMFile']);
     room.controller.setTexture(await GWE.textureManager.loadTexture(json['Controller']['TextureFile']));
     room.controller.setRadius(json['Controller']['Radius']);
-    room.controller.play('IDLE', true);
 
     room.camera = new CameraFollow();
     room.camera.setTargetDrawable(room.controller);
