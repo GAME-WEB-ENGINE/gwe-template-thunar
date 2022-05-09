@@ -5,7 +5,6 @@ class GameScreen extends GWE.Screen {
   constructor(app) {
     super(app);
     this.player = null;
-    
     this.room = null;
   }
 
