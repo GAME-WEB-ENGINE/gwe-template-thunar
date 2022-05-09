@@ -3,30 +3,28 @@
   "Id": "Room0000",
   "Name": "Sample 00",
   "Description": "A cold and metallic piece that feel like inside an machine",
-  "CameraProjectionMode": "PERSPECTIVE",
-  "CameraMatrix": [0.8391, -0.0012,  0.5439, 0.0000, 0.2993,  0.8360, -0.4599, 0.0000, -0.4542,  0.5487,  0.7019, 0.0000, -14.2880, 15.4892, 17.9114, 1.0000],
-  "CameraFovy": "10",
-  "Width": 4.70,
-  "Height": 3.00,
   "ScriptFile": "assets/rooms/sample00/script.jsc",
   "MusicFile": "assets/rooms/sample00/music.mp3",
   "MapFile": "assets/rooms/sample00/map.jsm",
   "MapTextureFile": "assets/rooms/sample00/atlas.png",
   "WalkmeshFile": "assets/rooms/sample00/walkmesh.jwm",
-  "PlayerModelIndex": 0,
+  "CameraMatrix": [0.8391, -0.0012,  0.5439, 0.0000, 0.2993,  0.8360, -0.4599, 0.0000, -0.4542,  0.5487,  0.7019, 0.0000, -14.2880, 15.4892, 17.9114, 1.0000],
+  "CameraFovy": "10",
+  "CameraMinClipOffsetX": -1.35,
+  "CameraMinClipOffsetY": -0.5,
+  "CameraMaxClipOffsetX": 1.35,
+  "CameraMaxClipOffsetY": 0.5,
+  "Controller": {
+    "JAMFile": "assets/models/barret/body.jam",
+    "TextureFile": "assets/models/barret/body.png",
+    "Radius": 0.28
+  },
   "Spawns": [{
     "Name": "Spawn0000",
     "Position": [-1.5, -14.3, -16.5],
     "Direction": [1, 0]
   }],
   "Models": [{
-    "JAMFile": "assets/models/barret/body.jam",
-    "TextureFile": "assets/models/barret/body.png",
-    "Position": [0, 0, 0],
-    "Rotation": [0, 0, 0],
-    "Radius": 0.28,
-    "OnActionBlockId": ""
-  },{
     "JAMFile": "assets/models/unit/body.jam",
     "TextureFile": "assets/models/unit/body.png",
     "Position": [15, -13.5, -23],

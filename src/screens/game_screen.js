@@ -3,36 +3,34 @@ let { GWE } = require('gwe');
 let { Spawn } = require('../entities/spawn');
 let { Model } = require('../entities/model');
 let { Trigger } = require('../entities/trigger');
-
-let PLAYER_SPEED = 7;
-let WORLD_DIRECTION_NULL = [0, 0];
-let WORLD_DIRECTION_LEFT = [-1, 0];
-let WORLD_DIRECTION_RIGHT = [1, 0];
-let WORLD_DIRECTION_FORWARD = [0, -1];
-let WORLD_DIRECTION_BACKWARD = [0, 1];
+let { Controller } = require('../entities/controller');
+let { CameraFollow } = require('../entities/camera_follow');
 
 class GameScreen extends GWE.Screen {
   constructor(app) {
     super(app);
-    this.player = this.app.getPlayer();
-    this.name = '';
-    this.description = '';
-    this.musicFile = '';
-    this.width = 0; // largeur scene / (largeur vue * 0.5)
-    this.height = 0; // hauteur scene / (hauteur vue * 0.5)
-    this.scriptMachine = new GWE.ScriptMachine();
-    this.map = null;
-    this.walkmesh = null;
-    this.spawns = [];
-    this.models = [];
-    this.movers = [];
-    this.triggers = [];
-    this.playerModel = null;
-    this.activeDrawable = null;
-    this.loaded = false;
+    this.player = null;
+    this.scriptMachine = null;
     this.running = true;
-    this.view = GWE.gfxManager.getView(0);
+    this.room = {};
+    this.room.name = '';
+    this.room.description = '';
+    this.room.musicFile = '';
+    this.room.map = null;
+    this.room.walkmesh = null;
+    this.room.controller = null;
+    this.room.camera = null;
+    this.room.spawns = [];
+    this.room.models = [];
+    this.room.movers = [];
+    this.room.triggers = [];
+    this.room.loaded = false;
+  }
 
+  onEnter() {
+    this.player = this.app.getPlayer();
+
+    this.scriptMachine = new GWE.ScriptMachine();
     this.scriptMachine.registerCommand('RUN', GWE.Utils.BIND(this.$run, this));
     this.scriptMachine.registerCommand('STOP', GWE.Utils.BIND(this.$stop, this));
     this.scriptMachine.registerCommand('WAITPAD', GWE.Utils.BIND(this.$waitPad, this));
@@ -49,206 +47,118 @@ class GameScreen extends GWE.Screen {
     this.scriptMachine.registerCommand('UI_FADE_OUT', GWE.Utils.BIND(this.$uiFadeOut, this));
     this.scriptMachine.registerCommand('MODEL_PLAY_MOVER', GWE.Utils.BIND(this.$modelPlayMover, this));
     this.scriptMachine.registerCommand('MODEL_PLAY_ANIMATION', GWE.Utils.BIND(this.$modelPlayAnimation, this));
-  }
 
-  onEnter() {
-    GWE.gfxManager.setShowDebug(true);
     this.loadRoom('./assets/rooms/sample00/data.room', 'Spawn0000');
   }
 
   handleEvent(event) {
+    if (!this.room.loaded) {
+      return;
+    }
     if (!this.running) {
       return;
     }
 
     if (event instanceof GWE.KeydownOnceEvent && event.key == GWE.InputKeyEnum.ENTER) {
-      if (this.activeDrawable) {
-        let onActionBlockId = this.activeDrawable.getOnActionBlockId();
-        if (onActionBlockId) {
-          this.scriptMachine.jump(onActionBlockId);
-        }
-      }
+      this.utilsControllerAction();
     }
   }
 
   update(ts) {
-    if (!this.loaded) {
-      return;
-    }
-
-    this.updateMap(ts);
-    this.updateWalkmesh(ts);
-    this.updateSpawns(ts);
-    this.updateModels(ts);
-    this.updateMovers(ts);
-    this.updateTriggers(ts);
-    this.updateActive(ts);
-    this.updatePlayer(ts);
-    this.updateCamera(ts);
+    this.updateControllerInput(ts);
+    this.updateRoom(ts);
     this.updateScriptMachine(ts);
   }
 
-  updateMap(ts) {
-    this.map.update(ts);
-  }
-
-  updateWalkmesh(ts) {
-    this.walkmesh.update(ts);
-  }
-
-  updateSpawns(ts) {
-    for (let spawn of this.spawns) {
-      spawn.update(ts);
+  updateControllerInput(ts) {
+    if (!this.room.loaded) {
+      return;
     }
-  }
-
-  updateModels(ts) {
-    for (let model of this.models) {
-      model.update(ts);
-    }
-  }
-
-  updateMovers(ts) {
-    for (let mover of this.movers) {
-      mover.update(ts);
-    }
-  }
-
-  updateTriggers(ts) {
-    for (let trigger of this.triggers) {
-      trigger.update(ts);
-    }
-  }
-
-  updateActive(ts) {
-    let playerPosition = this.playerModel.getPosition();
-    let playerRadius = this.playerModel.getRadius();
-    let playerRotation = this.playerModel.getRotation();
-    let playerDirection = [Math.cos(playerRotation[1]), 0, Math.sin(playerRotation[1])];
-    let playerTargetPosition = GWE.Utils.VEC3_ADD(playerPosition, GWE.Utils.VEC3_SCALE(playerDirection, playerRadius + 0.5));
-    let activeDrawable = null;
-
-    for (let trigger of this.triggers) {
-      if (GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), playerPosition) <= playerRadius + trigger.getRadius()) {
-        activeDrawable = trigger;
-        break;
-      }
-    }
-
-    for (let model of this.models) {
-      if (GWE.Utils.VEC3_DISTANCE(model.getPosition(), playerTargetPosition) <= model.getRadius()) {
-        activeDrawable = model;
-        break;
-      }
-    }
-
-    if (activeDrawable instanceof Trigger && activeDrawable != null && activeDrawable != this.activeDrawable) {
-      let onEnterBlockId = activeDrawable.getOnEnterBlockId();
-      if (onEnterBlockId) {
-        this.scriptMachine.jump(onEnterBlockId);
-      }
-    }
-
-    if (activeDrawable instanceof Trigger && activeDrawable == null && activeDrawable != this.activeDrawable) {
-      let onLeaveBlockId = this.activeDrawable.getOnLeaveBlockId();
-      if (onLeaveBlockId) {
-        this.scriptMachine.jump(onLeaveBlockId);
-      }
-    }
-
-    this.activeDrawable = activeDrawable;
-  }
-
-  updatePlayer(ts) {
     if (!this.running) {
       return;
     }
 
-    let playerDirection = WORLD_DIRECTION_NULL;
-
+    let direction = GWE.Utils.VEC3_ZERO;
     if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.LEFT)) {
-      playerDirection = WORLD_DIRECTION_LEFT;
+      direction = GWE.Utils.VEC3_LEFT;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.RIGHT)) {
-      playerDirection = WORLD_DIRECTION_RIGHT;
+      direction = GWE.Utils.VEC3_RIGHT;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.UP)) {
-      playerDirection = WORLD_DIRECTION_FORWARD;
+      direction = GWE.Utils.VEC3_FORWARD;
     }
     else if (GWE.inputManager.isKeyDown(GWE.InputKeyEnum.DOWN)) {
-      playerDirection = WORLD_DIRECTION_BACKWARD;
+      direction = GWE.Utils.VEC3_BACKWARD;
     }
 
-    if (playerDirection != WORLD_DIRECTION_NULL) {
-      this.moveModel(this.playerModel, GWE.Utils.VEC2_SCALE(playerDirection, PLAYER_SPEED * (ts / 1000)));
-      this.playerModel.play('RUN', true);
+    if (direction != GWE.Utils.VEC3_ZERO) {
+      this.utilsControllerMove(GWE.Utils.VEC3_SCALE(direction, this.room.controller.getSpeed() * (ts / 1000)));
+      this.room.controller.setRotation([0, GWE.Utils.VEC2_ANGLE([direction[0], direction[2]]), 0]);
+      this.room.controller.play('RUN', true);
     }
     else {
-      this.playerModel.play('IDLE', true);
+      this.room.controller.play('IDLE', true);
     }
   }
 
-  updateCamera(ts) {
-    let clipOffset = this.view.getClipOffset();
-    let playerPosition = this.playerModel.getPosition();
-    let playerScreenPosition = GWE.gfxManager.getScreenPosition(0, playerPosition[0], playerPosition[1], playerPosition[2]);
+  updateRoom(ts) {
+    if (!this.room.loaded) {
+      return;
+    }
 
-    let playerScreenGlobalPositionX = playerScreenPosition[0] + clipOffset[0];
-    let playerScreenGlobalPositionY = playerScreenPosition[1] + clipOffset[1];
+    this.room.map.update(ts);
+    this.room.walkmesh.update(ts);
+    this.room.controller.update(ts);
+    this.room.camera.update(ts);
 
-    let borderX = (this.width - 2) * 0.5;
-    let borderY = (this.height - 2) * 0.5;
+    for (let spawn of this.room.spawns) {
+      spawn.update(ts);
+    }
 
-    let nextClipOffsetX = GWE.Utils.CLAMP(playerScreenGlobalPositionX, -borderX, +borderX);
-    let nextClipOffsetY = GWE.Utils.CLAMP(playerScreenGlobalPositionY, -borderY, +borderY);
-    this.view.setClipOffset([nextClipOffsetX, nextClipOffsetY]);
+    for (let model of this.room.models) {
+      model.update(ts);
+    }
+
+    for (let mover of this.room.movers) {
+      mover.update(ts);
+    }
+
+    for (let trigger of this.room.triggers) {
+      trigger.update(ts);
+    }
   }
 
   updateScriptMachine(ts) {
+    if (!this.room.loaded) {
+      return;
+    }
+
     this.scriptMachine.update(ts);
   }
 
   draw(viewIndex) {
-    if (!this.loaded) {
+    if (!this.room.loaded) {
       return;
     }
 
-    this.drawMap(viewIndex);
-    this.drawWalkmesh(viewIndex);
-    this.drawSpawns(viewIndex);
-    this.drawModels(viewIndex);
-    this.drawMovers(viewIndex);
-    this.drawTriggers(viewIndex);
-  }
+    this.room.map.draw(viewIndex);
+    this.room.walkmesh.draw(viewIndex);
+    this.room.controller.draw(viewIndex);
 
-  drawMap(viewIndex) {
-    this.map.draw(viewIndex);
-  }
-
-  drawWalkmesh(viewIndex) {
-    this.walkmesh.draw(viewIndex);
-  }
-
-  drawSpawns(viewIndex) {
-    for (let spawn of this.spawns) {
+    for (let spawn of this.room.spawns) {
       spawn.draw(viewIndex);
     }
-  }
 
-  drawModels(viewIndex) {
-    for (let model of this.models) {
+    for (let model of this.room.models) {
       model.draw(viewIndex);
     }
-  }
 
-  drawMovers(viewIndex) {
-    for (let mover of this.movers) {
+    for (let mover of this.room.movers) {
       mover.draw(viewIndex);
     }
-  }
 
-  drawTriggers(viewIndex) {
-    for (let trigger of this.triggers) {
+    for (let trigger of this.room.triggers) {
       trigger.draw(viewIndex);
     }
   }
@@ -259,19 +169,29 @@ class GameScreen extends GWE.Screen {
       throw new Error('Room::loadFromFile(): File not valid !');
     }
 
-    this.name = json['Name'];
-    this.description = json['Description'];
-    this.width = json['Width'];
-    this.height = json['Height'];
-    this.scriptMachine.loadFromFile(json['ScriptFile']);
-    this.musicFile = json['MusicFile'];
+    this.room.name = json['Name'];
+    this.room.description = json['Description'];
+    this.room.musicFile = json['MusicFile'];
 
-    this.map = new GWE.GfxJSM();
-    this.map.loadFromFile(json['MapFile']);
-    this.map.setTexture(await GWE.textureManager.loadTexture(json['MapTextureFile']));
+    this.room.map = new GWE.GfxJSM();
+    this.room.map.loadFromFile(json['MapFile']);
+    this.room.map.setTexture(await GWE.textureManager.loadTexture(json['MapTextureFile']));
 
-    this.walkmesh = new GWE.GfxJWM();
-    this.walkmesh.loadFromFile(json['WalkmeshFile']);
+    this.room.walkmesh = new GWE.GfxJWM();
+    this.room.walkmesh.loadFromFile(json['WalkmeshFile']);
+
+    this.room.controller = new Controller();
+    this.room.controller.loadFromFile(json['Controller']['JAMFile']);
+    this.room.controller.setTexture(await GWE.textureManager.loadTexture(json['Controller']['TextureFile']));
+    this.room.controller.setRadius(json['Controller']['Radius']);
+    this.room.controller.play('IDLE', true);
+
+    this.room.camera = new CameraFollow();
+    this.room.camera.setTargetDrawable(this.room.controller);
+    this.room.camera.setMatrix(json['CameraMatrix']);
+    this.room.camera.setFovy(GWE.Utils.DEG_TO_RAD(parseInt(json['CameraFovy'])));
+    this.room.camera.setMinClipOffset(json['CameraMinClipOffsetX'], json['CameraMinClipOffsetY']);
+    this.room.camera.setMaxClipOffset(json['CameraMaxClipOffsetX'], json['CameraMaxClipOffsetY']);
 
     for (let obj of json['Spawns']) {
       let spawn = new Spawn();
@@ -279,7 +199,7 @@ class GameScreen extends GWE.Screen {
       spawn.setPosition(obj['Position']);
       spawn.setRadius(0.2);
       spawn.setDirection(obj['Direction']);
-      this.spawns.push(spawn);
+      this.room.spawns.push(spawn);
     }
 
     for (let obj of json['Models']) {
@@ -291,14 +211,14 @@ class GameScreen extends GWE.Screen {
       model.setRadius(obj['Radius']);
       model.setOnActionBlockId(obj['OnActionBlockId']);
       model.play('IDLE', true);
-      this.models.push(model);
+      this.room.models.push(model);
     }
 
     for (let obj of json['Movers']) {
       let mover = new GWE.GfxMover();
       mover.setSpeed(obj['Speed']);
       mover.setPoints(obj['Points']);
-      this.movers.push(mover);
+      this.room.movers.push(mover);
     }
 
     for (let obj of json['Triggers']) {
@@ -308,51 +228,80 @@ class GameScreen extends GWE.Screen {
       trigger.setOnEnterBlockId(obj['OnEnterBlockId']);
       trigger.setOnLeaveBlockId(obj['OnLeaveBlockId']);
       trigger.setOnActionBlockId(obj['OnActionBlockId']);
-      this.triggers.push(trigger);
+      this.room.triggers.push(trigger);
     }
 
-    let spawn = this.spawns.find(spawn => spawn.getName() == spawnName);
+    let spawn = this.room.spawns.find(spawn => spawn.getName() == spawnName);
     let spawnDirectionAngle = GWE.Utils.VEC2_ANGLE(spawn.direction);
+    this.room.controller.setPosition(spawn.position);
+    this.room.controller.setRotation([0, spawnDirectionAngle, 0]);
 
-    this.playerModel = this.models[json['PlayerModelIndex']];
-    this.playerModel.setPosition(spawn.position);
-    this.playerModel.setRotation([0, spawnDirectionAngle, 0]);
-
-    this.view.setProjectionMode(json['CameraProjectionMode']);
-    this.view.setCameraMatrix(json['CameraMatrix']);
-    this.view.setPerspectiveFovy(GWE.Utils.DEG_TO_RAD(parseInt(json['CameraFovy'])));
-
+    this.scriptMachine.loadFromFile(json['ScriptFile']);
     this.scriptMachine.jump('ON_INIT');
     this.scriptMachine.setEnabled(true);
 
-    this.loaded = true;
+    this.room.loaded = true;
   }
 
-  moveModel(model, velocity = [0, 0]) {
-    let nextPosition = GWE.Utils.VEC3_ADD(model.getPosition(), [velocity[0], 0, velocity[1]]);
-    let radius = model.getRadius();
+  utilsControllerAction() {
+    let position = this.room.controller.getPosition();
+    let radius = this.room.controller.getRadius();
+    let rotation = this.room.controller.getRotation();
 
-    for (let other of this.models) {
-      if (other == model) {
-        continue;
+    for (let trigger of this.room.triggers) {
+      if (GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), position) <= radius + trigger.getRadius()) {
+        if (trigger.getOnActionBlockId()) {
+          this.scriptMachine.jump(trigger.getOnActionBlockId());
+          return;
+        }        
       }
+    }
 
+    let direction = GWE.Utils.VEC3_CREATE(Math.cos(rotation[1]), 0, Math.sin(rotation[1]));
+    let handPosition = GWE.Utils.VEC3_ADD(position, GWE.Utils.VEC3_SCALE(direction, radius + 0.5));
+
+    for (let model of this.room.models) {
+      if (GWE.Utils.VEC3_DISTANCE(model.getPosition(), handPosition) <= model.getRadius()) {
+        if (model.getOnActionBlockId()) {
+          this.scriptMachine.jump(model.getOnActionBlockId());
+          return;
+        }
+      }
+    }
+  }
+
+  utilsControllerMove(velocity) {
+    let nextPosition = GWE.Utils.VEC3_ADD(this.room.controller.getPosition(), velocity);
+    let radius = this.room.controller.getRadius();
+
+    for (let other of this.room.models) {
       if (GWE.Utils.VEC3_DISTANCE(other.getPosition(), nextPosition) <= radius + other.getRadius()) {
         return;
       }
     }
 
-    let p0Elevation = this.walkmesh.getElevationAt(nextPosition[0], nextPosition[2]);
-    let p1Elevation = this.walkmesh.getElevationAt(nextPosition[0] - radius, nextPosition[2] - radius);
-    let p2Elevation = this.walkmesh.getElevationAt(nextPosition[0] - radius, nextPosition[2] + radius);
-    let p3Elevation = this.walkmesh.getElevationAt(nextPosition[0] + radius, nextPosition[2] - radius);
-    let p4Elevation = this.walkmesh.getElevationAt(nextPosition[0] + radius, nextPosition[2] + radius);
+    let p0Elevation = this.room.walkmesh.getElevationAt(nextPosition[0], nextPosition[2]);
+    let p1Elevation = this.room.walkmesh.getElevationAt(nextPosition[0] - radius, nextPosition[2] - radius);
+    let p2Elevation = this.room.walkmesh.getElevationAt(nextPosition[0] - radius, nextPosition[2] + radius);
+    let p3Elevation = this.room.walkmesh.getElevationAt(nextPosition[0] + radius, nextPosition[2] - radius);
+    let p4Elevation = this.room.walkmesh.getElevationAt(nextPosition[0] + radius, nextPosition[2] + radius);
     if (p0Elevation == Infinity || p1Elevation == Infinity || p2Elevation == Infinity || p3Elevation == Infinity || p4Elevation == Infinity) {
       return;
     }
 
-    model.setRotation([0, GWE.Utils.VEC2_ANGLE(velocity), 0]);
-    model.setPosition([nextPosition[0], p0Elevation, nextPosition[2]]);
+    this.room.controller.setPosition([nextPosition[0], p0Elevation, nextPosition[2]]);
+
+    for (let trigger of this.room.triggers) {
+      let distance = GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), nextPosition) <= radius + trigger.getRadius();
+      if (trigger.getOnEnterBlockId() && !trigger.isHovered() && distance < radius + trigger.getRadius()) {
+        this.scriptMachine.jump(trigger.getOnEnterBlockId());
+        trigger.setHovered(true);
+      }
+      else if (trigger.getOnLeaveBlockId() && trigger.isHovered() && distance > radius + trigger.getRadius()) {
+        this.scriptMachine.jump(trigger.getOnLeaveBlockId());
+        trigger.setHovered(false);
+      }
+    }
   }
 
   $run() {
@@ -453,14 +402,14 @@ class GameScreen extends GWE.Screen {
   }
 
   $modelPlayMover(modelIndex, moverIndex) {
-    let model = this.models[modelIndex];
-    let mover = this.movers[moverIndex];
+    let model = this.room.models[modelIndex];
+    let mover = this.room.movers[moverIndex];
     mover.setDrawable(model);
     mover.play();
   }
 
   $modelPlayAnimation(modelIndex, animationName, isLooped) {
-    let model = this.models[modelIndex];
+    let model = this.room.models[modelIndex];
     model.play(animationName, isLooped);
   }
 }

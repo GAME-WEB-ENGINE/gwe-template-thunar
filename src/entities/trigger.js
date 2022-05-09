@@ -4,6 +4,7 @@ class Trigger extends GWE.GfxDrawable {
   constructor() {
     super();
     this.radius = 0;
+    this.hovered = false;
     this.onEnterBlockId = '';
     this.onLeaveBlockId = '';
     this.onActionBlockId = '';
@@ -19,6 +20,14 @@ class Trigger extends GWE.GfxDrawable {
 
   setRadius(radius) {
     this.radius = radius;
+  }
+
+  isHovered() {
+    return this.hovered;
+  }
+
+  setHovered(hovered) {
+    this.hovered = hovered;
   }
 
   getOnEnterBlockId() {

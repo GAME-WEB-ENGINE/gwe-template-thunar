@@ -47,7 +47,7 @@
       },
       {
         "Name": "MODEL_PLAY_MOVER",
-        "Args": [1, 0]
+        "Args": [0, 0]
       },
       {
         "Name": "RUN",
