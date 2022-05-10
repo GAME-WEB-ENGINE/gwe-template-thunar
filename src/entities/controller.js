@@ -7,8 +7,7 @@ class Controller extends MovingObject {
   }
 
   getHandPosition() {
-    let direction = GWE.Utils.VEC3_CREATE(Math.cos(this.rotation[1]), 0, Math.sin(this.rotation[1]));
-    return GWE.Utils.VEC3_ADD(this.position, GWE.Utils.VEC3_SCALE(direction, this.radius + 0.5));
+    return GWE.Utils.VEC3_ADD(this.position, GWE.Utils.VEC3_SCALE(this.getDirection(), this.radius + 0.5));
   }
 }
 
