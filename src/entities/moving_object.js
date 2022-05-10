@@ -22,6 +22,10 @@ class MovingObject extends GWE.GfxJAM {
   setSpeed(speed) {
     this.speed = speed;
   }
+  
+  getDirection() {
+    return GWE.Utils.VEC3_CREATE(Math.cos(this.rotation[1]), 0, Math.sin(this.rotation[1]));
+  }
 }
 
 module.exports.MovingObject = MovingObject;
