@@ -1,18 +1,9 @@
-let { GWE } = require('gwe');
+let { MovingObject } = require('./moving_object');
 
-class Model extends GWE.GfxJAM {
+class Model extends MovingObject {
   constructor() {
     super();
-    this.radius = 0;
     this.onActionBlockId = '';
-  }
-
-  getRadius() {
-    return this.radius;
-  }
-
-  setRadius(radius) {
-    this.radius = radius;
   }
 
   getOnActionBlockId() {

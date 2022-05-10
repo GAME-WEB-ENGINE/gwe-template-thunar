@@ -1,26 +1,9 @@
 let { GWE } = require('gwe');
+let { MovingObject } = require('./moving_object');
 
-class Controller extends GWE.GfxJAM {
+class Controller extends MovingObject {
   constructor() {
     super();
-    this.radius = 0;
-    this.speed = 7;
-  }
-
-  getRadius() {
-    return this.radius;
-  }
-
-  setRadius(radius) {
-    this.radius = radius;
-  }
-
-  getSpeed() {
-    return this.speed;
-  }
-
-  setSpeed(speed) {
-    this.speed = speed;
   }
 
   getHandPosition() {
