@@ -3,8 +3,8 @@ let { GWE } = require('gwe');
 class CameraFollow {
   constructor() {
     this.targetDrawable = null;
-    this.minClipOffset = [-1, -1];
-    this.maxClipOffset = [1, 1];
+    this.minClipOffset = [0, 0];
+    this.maxClipOffset = [0, 0];
     this.view = GWE.gfxManager.getView(0);
 
     this.view.setProjectionMode(GWE.ProjectionModeEnum.PERSPECTIVE);

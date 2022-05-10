@@ -22,6 +22,11 @@ class Controller extends GWE.GfxJAM {
   setSpeed(speed) {
     this.speed = speed;
   }
+
+  getHandPosition() {
+    let direction = GWE.Utils.VEC3_CREATE(Math.cos(this.rotation[1]), 0, Math.sin(this.rotation[1]));
+    return GWE.Utils.VEC3_ADD(this.position, GWE.Utils.VEC3_SCALE(direction, this.radius + 0.5));
+  }
 }
 
 module.exports.Controller = Controller;

@@ -215,7 +215,7 @@ class Room {
   utilsControllerAction() {
     let position = this.controller.getPosition();
     let radius = this.controller.getRadius();
-    let rotation = this.controller.getRotation();
+    let handPosition = this.controller.getHandPosition();
 
     for (let trigger of this.triggers) {
       if (GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), position) <= radius + trigger.getRadius()) {
@@ -225,9 +225,6 @@ class Room {
         }
       }
     }
-
-    let direction = GWE.Utils.VEC3_CREATE(Math.cos(rotation[1]), 0, Math.sin(rotation[1]));
-    let handPosition = GWE.Utils.VEC3_ADD(position, GWE.Utils.VEC3_SCALE(direction, radius + 0.5));
 
     for (let model of this.models) {
       if (GWE.Utils.VEC3_DISTANCE(model.getPosition(), handPosition) <= model.getRadius()) {
@@ -261,12 +258,14 @@ class Room {
     this.controller.setPosition([nextPosition[0], p0Elevation, nextPosition[2]]);
 
     for (let trigger of this.triggers) {
-      let distance = GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), nextPosition) <= radius + trigger.getRadius();
-      if (trigger.getOnEnterBlockId() && !trigger.isHovered() && distance < radius + trigger.getRadius()) {
+      let distance = GWE.Utils.VEC3_DISTANCE(trigger.getPosition(), nextPosition);
+      let distanceMin = radius + trigger.getRadius();
+
+      if (trigger.getOnEnterBlockId() && !trigger.isHovered() && distance < distanceMin) {
         this.scriptMachine.jump(trigger.getOnEnterBlockId());
         trigger.setHovered(true);
       }
-      else if (trigger.getOnLeaveBlockId() && trigger.isHovered() && distance > radius + trigger.getRadius()) {
+      else if (trigger.getOnLeaveBlockId() && trigger.isHovered() && distance > distanceMin) {
         this.scriptMachine.jump(trigger.getOnLeaveBlockId());
         trigger.setHovered(false);
       }
