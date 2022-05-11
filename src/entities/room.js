@@ -241,7 +241,20 @@ class Room {
     let radius = this.controller.getRadius();
 
     for (let other of this.models) {
-      if (GWE.Utils.VEC3_DISTANCE(other.getPosition(), nextPosition) <= radius + other.getRadius()) {
+      let delta = GWE.Utils.VEC3_SUBSTRACT(nextPosition, other.getPosition());
+      let distance = Math.sqrt((delta[0] * delta[0]) + (delta[2] * delta[2]));
+      let distanceMin = radius + other.getRadius();
+
+      if (distance < distanceMin) {
+        let a = Math.PI * 2 - Math.atan2(delta[2], delta[0]);
+        let c = Math.PI * 2 - a;
+
+        let newVelocity = [0, 0];
+        newVelocity[0] = Math.cos(c) * GWE.Utils.VEC3_LENGTH(velocity);
+        newVelocity[2] = Math.sin(c) * GWE.Utils.VEC3_LENGTH(velocity);
+
+        nextPosition = GWE.Utils.VEC3_ADD(this.controller.getPosition(), newVelocity);
+        this.controller.setPosition([nextPosition[0], nextPosition[1], nextPosition[2]]);
         return;
       }
     }
