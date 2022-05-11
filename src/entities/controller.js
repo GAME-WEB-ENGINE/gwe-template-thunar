@@ -4,7 +4,7 @@ class Controller extends GWE.GfxJAM {
   constructor() {
     super();
     this.radius = 0;
-    this.speed = 7;
+    this.speed = 4;
   }
 
   getRadius() {
