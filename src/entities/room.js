@@ -249,11 +249,12 @@ class Room {
         let a = Math.PI * 2 - Math.atan2(delta[2], delta[0]);
         let c = Math.PI * 2 - a;
 
-        let newVelocity = [0, 0];
-        newVelocity[0] = Math.cos(c) * GWE.Utils.VEC3_LENGTH(velocity);
-        newVelocity[2] = Math.sin(c) * GWE.Utils.VEC3_LENGTH(velocity);
+        let newVelocity = [0, 0, 0];
+        newVelocity[0] = Math.cos(c) * (distanceMin - distance);
+        newVelocity[2] = Math.sin(c) * (distanceMin - distance);
 
         nextPosition = GWE.Utils.VEC3_ADD(this.controller.getPosition(), newVelocity);
+        console.log(nextPosition);
         this.controller.setPosition([nextPosition[0], nextPosition[1], nextPosition[2]]);
         return;
       }
