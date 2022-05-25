@@ -60,17 +60,16 @@ class Room {
     room.walkmesh = new GWE.GfxJWM();
     room.walkmesh.loadFromFile(json['WalkmeshFile']);
 
-    room.controller = new Controller();
-    room.controller.loadFromFile(json['Controller']['JAMFile']);
-    room.controller.setTexture(await GWE.textureManager.loadTexture(json['Controller']['TextureFile']));
-    room.controller.setRadius(json['Controller']['Radius']);
-
     room.camera = new CameraFollow();
-    room.camera.setTargetDrawable(room.controller);
     room.camera.setMatrix(json['CameraMatrix']);
     room.camera.setFovy(GWE.Utils.DEG_TO_RAD(parseInt(json['CameraFovy'])));
     room.camera.setMinClipOffset(json['CameraMinClipOffsetX'], json['CameraMinClipOffsetY']);
     room.camera.setMaxClipOffset(json['CameraMaxClipOffsetX'], json['CameraMaxClipOffsetY']);
+
+    room.controller = new Controller();
+    room.controller.loadFromFile(json['Controller']['JAMFile']);
+    room.controller.setTexture(await GWE.textureManager.loadTexture(json['Controller']['TextureFile']));
+    room.controller.setRadius(json['Controller']['Radius']);
 
     for (let obj of json['Spawns']) {
       let spawn = new Spawn();
@@ -109,6 +108,8 @@ class Room {
       trigger.setOnActionBlockId(obj['OnActionBlockId']);
       room.triggers.push(trigger);
     }
+
+    room.camera.setTargetDrawable(room.controller);
 
     let spawn = room.spawns.find(spawn => spawn.getName() == spawnName);
     let spawnDirectionAngle = GWE.Utils.VEC2_ANGLE(spawn.direction);
@@ -159,10 +160,10 @@ class Room {
     if (moveDir != GWE.Utils.VEC3_ZERO) {
       this.utilsControllerMove(GWE.Utils.VEC3_SCALE(moveDir, this.controller.getSpeed() * (ts / 1000)));
       this.controller.setRotation([0, GWE.Utils.VEC2_ANGLE([moveDir[0], moveDir[2]]), 0]);
-      this.controller.play('RUN', true);
+      this.controller.play('RUN', true, true);
     }
     else {
-      this.controller.play('IDLE', true);
+      this.controller.play('IDLE', true, true);
     }
   }
 
